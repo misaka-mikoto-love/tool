@@ -1,0 +1,256 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Roll-Day 的工具箱</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/assets/css/main.css" />
+    <link rel="stylesheet" href="/assets/css/noscript.css" />
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/noscript.css" />
+    </noscript>
+    <style>
+        .code-block {
+            max-height: 420px;
+            overflow-y: scroll;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .code-block {
+                max-height: 290px;
+            }
+        }
+    </style>
+</head>
+
+<body class="is-preload">
+    <!-- Wrapper -->
+    <div id="wrapper">
+
+        <!-- Header -->
+        <header id="header">
+            <div class="inner">
+
+                <!-- Logo -->
+                <a href="/index.html" class="logo">
+                    <span class="symbol"><img src="/images/title.jpg" alt="" /></span><span
+                        class="title">Roll-Day</span>
+                </a>
+
+                <!-- Nav -->
+                <nav style="position: absolute;">
+                    <ul>
+                        <li><a href="#menu">Menu</a></li>
+                    </ul>
+                </nav>
+
+            </div>
+        </header>
+
+        <!-- Menu -->
+        <nav id="menu">
+            <h2>Menu</h2>
+            <ul>
+                <li><a href="/index.html">Home</a></li>
+                <li><a href="/generic.html">Ipsum veroeros</a></li>
+                <li><a href="/generic.html">Tempus etiam</a></li>
+                <li><a href="/generic.html">Consequat dolor</a></li>
+                <li><a href="/elements.html">Elements</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main -->
+        <div id="main">
+            <div class="inner">
+                <header>
+                    <h1>这是<a href="https://tool.r-d.ren">Roll-Day 的工具箱</a>.</h1>
+                    <p>这里有我制作的一些工具,脚本,对你可能有一些帮助.</p>
+                </header>
+                <div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+                    <pre class="code-block" ondblclick="copyCode()">
+                        <code class="language-python">
+                            import requests
+                            import random
+                            import string
+                            import re
+                            
+                            class CKCloudAPI:
+                                def __init__(self, email=None, password=None):
+                                    self.base_url = "https://www.ckcloud.shop/api/v1"
+                                    self.token = None
+                                    self.email = email
+                                    self.password = password
+                            
+                                def register(self):
+                                    url = f"{self.base_url}/passport/auth/register"
+                                    data = {"email": self.email, "password": self.password}
+                                    try:
+                                        response = requests.post(url, data=data)
+                                        response.raise_for_status()
+                                        print("注册成功")
+                                    except requests.exceptions.HTTPError as e:
+                                        error_msg = e.response.json()["message"]
+                                        print(f"注册失败，错误信息为：{error_msg}")
+                                        input("")
+                            
+                                def login(self):
+                                    url = f"{self.base_url}/passport/auth/login"
+                                    data = {"email": self.email, "password": self.password}
+                                    try:
+                                        response = requests.post(url, data=data)
+                                        response.raise_for_status()
+                                        print("登录成功")
+                                        self.token = response.json()["data"]["auth_data"]
+                                        token = response.json()["data"]["token"]
+                                        print("Token:"+token)
+                                    except requests.exceptions.HTTPError as e:
+                                        error_msg = e.response.json()["message"]
+                                        print(f"登录失败，错误信息为：{error_msg}")
+                                        self.token = None
+                                        input("")
+                            
+                                def get_link(self, node=None):
+                                    if node:
+                                        url = f"{self.base_url}/user/getSubscribe?node_id={node}"
+                                    else:
+                                        url = f"{self.base_url}/user/getSubscribe"
+                                    headers = {"Authorization": self.token}
+                                    try:
+                                        response = requests.get(url, headers=headers)
+                                        response.raise_for_status()
+                                        return response.json()["data"]["subscribe_url"]
+                                    except requests.exceptions.HTTPError as e:
+                                        error_msg = e.response.json()["message"]
+                                        print(f"获取链接失败，错误信息为：{error_msg}")
+                                        input("")
+                                        return None
+                                        
+                            
+                            
+                            def generate_email():
+                                domains = [
+                                    "gmail.com",
+                                    "qq.com",
+                                    "163.com",
+                                    "yahoo.com",
+                                    "sina.com",
+                                    "126.com",
+                                    "outlook.com",
+                                    "yeah.net",
+                                    "foxmail.com",
+                                    "hotmail.com",
+                                ]
+                                letters = string.ascii_lowercase
+                                username = "".join(random.choice(letters) for i in range(8))
+                                domain = random.choice(domains)
+                                return f"{username}@{domain}"
+                            
+                            
+                            def generate_password():
+                                chars = string.ascii_letters + string.digits + string.punctuation
+                                password = "".join(random.choice(chars) for i in range(12))
+                                return password
+                            
+                            
+                            if __name__ == "__main__":
+                                api = CKCloudAPI()
+                                email = generate_email()
+                                password = generate_password()
+                                print(f"Email: {email}")
+                                print(f"Password: {password}")
+                                api.email = email
+                                api.password = password
+                                api.register()
+                                api.login()
+                                if api.token:
+                                    print("获取链接成功")
+                                    link = api.get_link()
+                                    if link:
+                                        print(link)
+                                else:
+                                    print("获取链接失败")
+                            input("")
+                            
+                        </code>
+                      </pre>
+
+                    <script>
+                        function copyCode() {
+                            const codeBlock = document.querySelector('.code-block');
+                            const code = codeBlock.querySelector('code');
+                            const text = code.innerText;
+
+                            navigator.clipboard.writeText(text)
+                                .then(() => {
+                                    console.log('Code copied successfully!');
+                                    // 可以添加其他提示或反馈
+                                })
+                                .catch((error) => {
+                                    console.error('Failed to copy code:', error);
+                                    // 可以添加其他提示或反馈
+                                });
+                        }
+                    </script>
+                </div>
+
+                <div>
+                    <script src="/assets/js/highlight.min.js"></script>
+                    <script src="/assets/js/highlightjs-line-numbers.min.js"></script>
+                    <script type="text/javascript">
+                        hljs.initHighlightingOnLoad();
+
+                        hljs.initLineNumbersOnLoad();
+
+                        $(document).ready(function () {
+                            $("code.hljs").each(function (i, block) {
+                                hljs.lineNumbersBlock(block);
+                            });
+                        });
+                    </script>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer id="footer">
+            <div class="inner">
+                <section>
+                    <h2>Follow</h2>
+                    <ul class="icons">
+                        <li><a href="#" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+                        <li><a href="#" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+                    </ul>
+                </section>
+                <ul class="copyright">
+                    <li>&copy; Untitled. All rights reserved</li>
+                    <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                </ul>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <div>
+        <script src="/assets/js/jquery.min.js"></script>
+        <script src="/assets/js/browser.min.js"></script>
+        <script src="/assets/js/breakpoints.min.js"></script>
+        <script src="/assets/js/util.js"></script>
+        <script src="/assets/js/main.js"></script>
+
+    </div>
+</body>
+
+</html>
